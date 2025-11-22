@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ProblemSection } from './components/ProblemSection';
@@ -8,6 +8,7 @@ import { Features } from './components/Features';
 import { ImpactSection } from './components/ImpactSection';
 import { CTASection } from './components/CTASection';
 import { Footer } from './components/Footer';
+import { WelcomeModal } from './components/WelcomeModal';
 
 export type Language = 'es' | 'en';
 
@@ -22,6 +23,14 @@ export const content = {
       ambition: "NUESTRA AMBICIÓN: Convertir a Cuenca en la ciudad pionera en Ecuador en movilidad segura para mujeres, creando al mismo tiempo una potente palanca de inserción económica para madres y mujeres desempleadas, a través de un modelo de transporte inclusivo e innovador.",
       cta1: "Únete al Movimiento",
       cta2: "Ver Video"
+    },
+    story: {
+      title: "Nuestra Historia: De la App Técnica al Impacto Social",
+      p1: "El proyecto Ella va Segura nació de una conversación clave entre Joël y Santiago: la urgencia de crear una aplicación de taxi exclusivamente para mujeres en Cuenca.",
+      p2: "Técnicamente, desarrollar la app no era un problema. Sin embargo, nos enfrentamos rápidamente a un reto logístico mucho mayor: la oferta no cubría la necesidad. La escasez de mujeres conductoras de taxi en Cuenca hacía inviable un servicio puramente digital.",
+      p3: "Comprendimos que no bastaba con crear una plataforma; debíamos iniciar un proyecto social para crear la oferta de empleo.",
+      p4: "Esta landing page tiene un propósito fundamental: encontrar socios y aliados estratégicos que nos ayuden a construir este servicio desde la base, ofreciendo nuevas perspectivas económicas y una movilidad segura a las mujeres de Cuenca.",
+      button: "Entrar al Sitio"
     },
     problem: {
       sectionLabel: "I. EL PROBLEMA",
@@ -180,6 +189,14 @@ export const content = {
       cta1: "Join the Movement",
       cta2: "Watch Video"
     },
+    story: {
+      title: "Our Story: From Technical App to Social Impact",
+      p1: "The Ella va Segura project was born from a key conversation between Joël and Santiago: the urgency to create a taxi application exclusively for women in Cuenca.",
+      p2: "Technically, developing the app was not a problem. However, we quickly faced a much larger logistical challenge: supply did not meet demand. The scarcity of female taxi drivers in Cuenca made a purely digital service unviable.",
+      p3: "We understood that it was not enough to create a platform; we had to initiate a social project to create the job supply.",
+      p4: "This landing page has a fundamental purpose: to find strategic partners and allies to help us build this service from the ground up, offering new economic perspectives and safe mobility to the women of Cuenca.",
+      button: "Enter Site"
+    },
     problem: {
       sectionLabel: "I. THE PROBLEM",
       title: "Ecuadorian Insecurity Restricts Mobility for Nearly Half of Young Women.",
@@ -329,7 +346,20 @@ export const content = {
 };
 
 const App: React.FC = () => {
-  const [lang, setLang] = useState<Language>('en');
+  const [lang, setLang] = useState<Language>('es');
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('hasVisitedEllaVaSegura');
+    if (!hasVisited) {
+      setShowModal(true);
+    }
+  }, []);
+
+  const handleCloseModal = () => {
+    localStorage.setItem('hasVisitedEllaVaSegura', 'true');
+    setShowModal(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-white overflow-x-hidden text-slate-800">
@@ -343,6 +373,15 @@ const App: React.FC = () => {
         <CTASection content={content[lang].cta} />
       </main>
       <Footer lang={lang} />
+      
+      {showModal && (
+        <WelcomeModal 
+          lang={lang} 
+          setLang={setLang} 
+          content={content[lang].story} 
+          onClose={handleCloseModal} 
+        />
+      )}
     </div>
   );
 };

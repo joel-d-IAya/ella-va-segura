@@ -55,9 +55,6 @@ export const Header: React.FC<HeaderProps> = ({ lang, setLang, content }) => {
                 EN
               </button>
             </div>
-            <a href="#cta">
-              <Button size="sm" className="hidden sm:flex">{content.contact}</Button>
-            </a>
           </div>
         </div>
       </div>
