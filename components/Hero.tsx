@@ -1,15 +1,16 @@
 
 import React from 'react';
 import { Button } from './Button';
-import { ArrowRight, PlayCircle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Language } from '../App';
 
 interface HeroProps {
   lang: Language;
   content: any;
+  onOpenSupport: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ content }) => {
+export const Hero: React.FC<HeroProps> = ({ content, onOpenSupport }) => {
   return (
     <section className="relative pt-48 pb-16 lg:pt-52 lg:pb-24 overflow-hidden bg-gradient-to-b from-purple-50 via-white to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -49,13 +50,9 @@ export const Hero: React.FC<HeroProps> = ({ content }) => {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <Button size="lg" className="w-full sm:w-auto group shadow-xl shadow-primary/20">
+            <Button onClick={onOpenSupport} size="lg" className="w-full sm:w-auto group shadow-xl shadow-primary/20">
               {content.cta1}
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="secondary" size="lg" className="w-full sm:w-auto group">
-              <PlayCircle className="mr-2 w-5 h-5 text-secondary group-hover:scale-110 transition-transform" />
-              {content.cta2}
             </Button>
           </div>
 

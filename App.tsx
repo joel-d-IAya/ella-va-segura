@@ -9,6 +9,7 @@ import { ImpactSection } from './components/ImpactSection';
 import { CTASection } from './components/CTASection';
 import { Footer } from './components/Footer';
 import { WelcomeModal } from './components/WelcomeModal';
+import { SupportModal } from './components/SupportModal';
 
 export type Language = 'es' | 'en';
 
@@ -176,6 +177,24 @@ export const content = {
       ],
       desc: "\"El proyecto es económicamente viable y socialmente necesario... Solicitamos su apoyo en tres ejes claros... Únanse a esta iniciativa para hacer de Cuenca un verdadero modelo de seguridad y autonomía para las mujeres.\"",
       button: "Únete Ahora"
+    },
+    support: {
+      title: "Contáctanos y Apoya",
+      subtitle: "Construyamos juntos este futuro.",
+      labels: {
+        firstName: "Nombre",
+        lastName: "Apellido",
+        company: "Empresa / Institución",
+        email: "Correo Electrónico",
+        phone: "Teléfono (Opcional)",
+        checkHelp: "Quiero ayudar a que este proyecto cobre vida",
+        checkPresentation: "Quisiera una presentación del proyecto en mi institución",
+        message: "Describe tu solicitud o deseo",
+        submit: "Enviar Mensaje",
+        submitting: "Enviando...",
+        successTitle: "¡Mensaje Enviado!",
+        successDesc: "Gracias por tu interés en Ella va Segura. Nos pondremos en contacto contigo pronto."
+      }
     }
   },
   en: {
@@ -341,6 +360,24 @@ export const content = {
       ],
       desc: "\"The project is economically viable and socially necessary... We request your support across three clear axes... Join us in this initiative to make Cuenca a true model of safety and autonomy for women.\"",
       button: "Support the Initiative"
+    },
+    support: {
+      title: "Contact & Support",
+      subtitle: "Let's build this future together.",
+      labels: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        company: "Company / Institution",
+        email: "Email Address",
+        phone: "Phone (Optional)",
+        checkHelp: "I want to help this project come to life",
+        checkPresentation: "I would like a presentation of the project at my institution",
+        message: "Describe your request or wish",
+        submit: "Send Message",
+        submitting: "Sending...",
+        successTitle: "Message Sent!",
+        successDesc: "Thank you for your interest in Ella va Segura. We will be in touch shortly."
+      }
     }
   }
 };
@@ -348,6 +385,7 @@ export const content = {
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('es');
   const [showModal, setShowModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem('hasVisitedEllaVaSegura');
@@ -361,16 +399,24 @@ const App: React.FC = () => {
     setShowModal(false);
   };
 
+  const handleOpenSupport = () => {
+    setShowSupportModal(true);
+  }
+
+  const handleCloseSupport = () => {
+    setShowSupportModal(false);
+  }
+
   return (
     <div className="min-h-screen flex flex-col font-sans bg-white overflow-x-hidden text-slate-800">
       <Header lang={lang} setLang={setLang} content={content[lang].nav} />
       <main className="flex-grow">
-        <Hero lang={lang} content={content[lang].hero} />
+        <Hero lang={lang} content={content[lang].hero} onOpenSupport={handleOpenSupport} />
         <ProblemSection content={content[lang].problem} />
         <DoubleImpactSection content={content[lang].doubleImpact} />
         <Features content={content[lang].solution} />
         <ImpactSection content={content[lang].impact} />
-        <CTASection content={content[lang].cta} />
+        <CTASection content={content[lang].cta} onOpenSupport={handleOpenSupport} />
       </main>
       <Footer lang={lang} />
       
@@ -380,6 +426,13 @@ const App: React.FC = () => {
           setLang={setLang} 
           content={content[lang].story} 
           onClose={handleCloseModal} 
+        />
+      )}
+
+      {showSupportModal && (
+        <SupportModal
+          content={content[lang].support}
+          onClose={handleCloseSupport}
         />
       )}
     </div>

@@ -11,9 +11,10 @@ interface CTAProps {
     desc: string;
     button: string;
   };
+  onOpenSupport: () => void;
 }
 
-export const CTASection: React.FC<CTAProps> = ({ content }) => {
+export const CTASection: React.FC<CTAProps> = ({ content, onOpenSupport }) => {
   return (
     <section id="cta" className="py-24 bg-gradient-to-br from-purple-50 to-white border-t border-purple-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -42,7 +43,7 @@ export const CTASection: React.FC<CTAProps> = ({ content }) => {
                </div>
             </div>
 
-            <Button size="lg" className="shadow-xl shadow-primary/20 hover:shadow-primary/40 scale-110 transition-transform duration-300">
+            <Button onClick={onOpenSupport} size="lg" className="shadow-xl shadow-primary/20 hover:shadow-primary/40 scale-110 transition-transform duration-300">
                {content.button}
             </Button>
         </div>
