@@ -60,13 +60,42 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate Backend API call
+    const formData = new FormData(e.target as HTMLFormElement);
+    
+    // Collect interests
+    const interests = [];
+    if (formData.get('checkHelp')) interests.push("Quiero ayudar");
+    if (formData.get('checkPresentation')) interests.push("Quisiera una presentación");
+
+    // Construct Payload matching backend requirements
+    const payload = {
+      nombre: formData.get('firstName'),
+      apellido: formData.get('lastName'),
+      empresa: formData.get('company'),
+      email: formData.get('email'),
+      telefono: formData.get('phone'),
+      intereses: interests.join(', '),
+      mensaje: formData.get('message')
+    };
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // In a real app, you would fetch(WEBHOOK_URL, { method: 'POST', body: ... })
-      setIsSuccess(true);
+      const response = await fetch('https://n8nflow.iaya.cloud/webhook/contactform-evs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setIsSuccess(true);
+      } else {
+        console.error('Failed to submit form');
+        alert('Hubo un error al enviar el formulario. Por favor intente nuevamente.');
+      }
     } catch (error) {
       console.error("Submission error", error);
+      alert('Hubo un error de conexión. Por favor verifique su internet e intente nuevamente.');
     } finally {
       setIsLoading(false);
     }

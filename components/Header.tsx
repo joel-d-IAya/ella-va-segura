@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({ lang, setLang, content }) => {
           {/* Logo Area */}
           <div className="flex items-center cursor-pointer group">
             <img 
-              src="https://raw.githubusercontent.com/joel-d-IAya/ella-va-segura/main/elle-va-segura_logo-s.png" 
+              src="https://raw.githubusercontent.com/joel-d-IAya/ella-va-segura/main/public/elle-va-segura_logo-s.png" 
               alt="Ella va segura" 
               className="h-[100px] w-auto object-contain transition-transform group-hover:scale-105"
             />
