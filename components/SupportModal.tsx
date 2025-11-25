@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './Button';
-import { X, CheckCircle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface SupportModalProps {
   content: {
@@ -25,9 +25,19 @@ interface SupportModalProps {
   onClose: () => void;
 }
 
+interface ValidationErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  message?: string;
+  interests?: string;
+}
+
 export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
   
   // Reference for managing focus
   const firstInputRef = useRef<HTMLInputElement>(null);
@@ -56,12 +66,70 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
+  const validateForm = (formData: FormData): ValidationErrors => {
+    const newErrors: ValidationErrors = {};
+    
+    const firstName = (formData.get('firstName') as string || '').trim();
+    const lastName = (formData.get('lastName') as string || '').trim();
+    const email = (formData.get('email') as string || '').trim();
+    const phone = (formData.get('phone') as string || '').trim();
+    const message = (formData.get('message') as string || '').trim();
+    const checkHelp = formData.get('checkHelp');
+    const checkPresentation = formData.get('checkPresentation');
+
+    // Name Validation (Min 2 chars)
+    if (firstName.length < 2) {
+      newErrors.firstName = "Mínimo 2 caracteres / Min 2 characters";
+    }
+    if (lastName.length < 2) {
+      newErrors.lastName = "Mínimo 2 caracteres / Min 2 characters";
+    }
+
+    // Email Validation (Strict Regex)
+    // Matches something@something.extension (extension 2+ chars)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      newErrors.email = "Email inválido (ej: nombre@dominio.com)";
+    }
+
+    // Phone Validation (Optional, digits and + only)
+    if (phone && !/^[0-9+]+$/.test(phone)) {
+      newErrors.phone = "Solo números y '+' / Digits and '+' only";
+    }
+
+    // Message Validation (Min 10 chars, optional in original req but requested strict here)
+    if (message.length > 0 && message.length < 10) {
+       // Only validate length if they typed something, unless we want to make it required. 
+       // The prompt said "Message: Must be at least 10 characters long". 
+       // Assuming it acts as a constraint if content exists, or we make it required.
+       // Let's make it strict based on prompt "Reject inputs like 'a'".
+       newErrors.message = "Mínimo 10 caracteres / Min 10 characters";
+    }
+
+    // Checkbox Validation (At least one)
+    if (!checkHelp && !checkPresentation) {
+      newErrors.interests = "Seleccione al menos una opción / Select at least one option";
+    }
+
+    return newErrors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setErrors({}); // Clear previous errors
 
     const formData = new FormData(e.target as HTMLFormElement);
     
+    // Run Validation
+    const validationErrors = validateForm(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      // Find first error and scroll/focus (optional but good UX)
+      return;
+    }
+
+    setIsLoading(true);
+
     // Collect interests
     const interests = [];
     if (formData.get('checkHelp')) interests.push("Quiero ayudar");
@@ -135,7 +203,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
               <p id="support-modal-desc" className="text-slate-500">{content.subtitle}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label htmlFor="firstName" className="text-xs font-semibold text-slate-700 uppercase tracking-wide ml-1 block">
@@ -145,11 +213,10 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
                     ref={firstInputRef}
                     id="firstName"
                     name="firstName"
-                    required
-                    aria-required="true"
                     type="text" 
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${errors.firstName ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-primary/20'}`}
                   />
+                  {errors.firstName && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.firstName}</p>}
                 </div>
                 <div className="space-y-1">
                   <label htmlFor="lastName" className="text-xs font-semibold text-slate-700 uppercase tracking-wide ml-1 block">
@@ -158,11 +225,10 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
                   <input 
                     id="lastName"
                     name="lastName"
-                    required
-                    aria-required="true"
                     type="text" 
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${errors.lastName ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-primary/20'}`}
                   />
+                  {errors.lastName && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.lastName}</p>}
                 </div>
               </div>
 
@@ -185,11 +251,10 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
                 <input 
                   id="email"
                   name="email"
-                  required
-                  aria-required="true"
                   type="email" 
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${errors.email ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-primary/20'}`}
                 />
+                {errors.email && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.email}</p>}
               </div>
 
               <div className="space-y-1">
@@ -200,32 +265,36 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
                   id="phone"
                   name="phone"
                   type="tel" 
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${errors.phone ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-primary/20'}`}
                 />
+                {errors.phone && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.phone}</p>}
               </div>
 
-              <div className="pt-2 space-y-3" role="group" aria-label="Support options">
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div className="relative flex items-center">
-                    <input type="checkbox" className="peer sr-only" id="checkHelp" name="checkHelp" />
-                    <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-primary peer-checked:border-primary peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 transition-all"></div>
-                    <CheckCircle className="w-3.5 h-3.5 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" aria-hidden="true" />
-                  </div>
-                  <span className="text-sm text-slate-600 group-hover:text-primary transition-colors select-none">
-                    {content.labels.checkHelp}
-                  </span>
-                </label>
+              <div className="pt-2" role="group" aria-label="Support options">
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input type="checkbox" className="peer sr-only" id="checkHelp" name="checkHelp" />
+                      <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-primary peer-checked:border-primary peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 transition-all"></div>
+                      <CheckCircle className="w-3.5 h-3.5 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" aria-hidden="true" />
+                    </div>
+                    <span className="text-sm text-slate-600 group-hover:text-primary transition-colors select-none">
+                      {content.labels.checkHelp}
+                    </span>
+                  </label>
 
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div className="relative flex items-center">
-                    <input type="checkbox" className="peer sr-only" id="checkPresentation" name="checkPresentation" />
-                    <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-primary peer-checked:border-primary peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 transition-all"></div>
-                    <CheckCircle className="w-3.5 h-3.5 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" aria-hidden="true" />
-                  </div>
-                  <span className="text-sm text-slate-600 group-hover:text-primary transition-colors select-none">
-                    {content.labels.checkPresentation}
-                  </span>
-                </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input type="checkbox" className="peer sr-only" id="checkPresentation" name="checkPresentation" />
+                      <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-primary peer-checked:border-primary peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 transition-all"></div>
+                      <CheckCircle className="w-3.5 h-3.5 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" aria-hidden="true" />
+                    </div>
+                    <span className="text-sm text-slate-600 group-hover:text-primary transition-colors select-none">
+                      {content.labels.checkPresentation}
+                    </span>
+                  </label>
+                </div>
+                {errors.interests && <p className="text-red-500 text-xs mt-2 ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.interests}</p>}
               </div>
 
               <div className="space-y-1 pt-2">
@@ -236,8 +305,9 @@ export const SupportModal: React.FC<SupportModalProps> = ({ content, onClose }) 
                   id="message"
                   name="message"
                   rows={3}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm resize-none"
+                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-none transition-all text-sm resize-none ${errors.message ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-primary/20'}`}
                 ></textarea>
+                {errors.message && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> {errors.message}</p>}
               </div>
 
               <div className="pt-4">
